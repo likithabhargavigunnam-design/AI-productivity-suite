@@ -1,55 +1,36 @@
-# AI Productivity Suite
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A full-stack Next.js application integrated with AI tools for notes, YouTube summarization, job searching, and resume building.
+## Getting Started
 
-## Features
-- **Notes Saver**: Full CRUD functionality with real-time sync.
-- **AI YouTube Summariser**: Fetch transcripts and generate summaries via Gemini 2.0 Flash.
-- **AI Job Search**: Crawl job listings using Firecrawl and summarize them with AI.
-- **AI Resume Maker**: Generate professional resumes from user input.
-- **Google Auth**: Secure authentication via Supabase Auth.
+First, run the development server:
 
-## Tech Stack
-- **Next.js**: Framework
-- **TailwindCSS**: Premium UI with Glassmorphism
-- **Supabase**: Auth & PostgreSQL Database
-- **OpenRouter (Gemini 2.0 Flash)**: AI Logic
-- **Firecrawl**: Job Crawling
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## Prerequisites
-- Node.js installed on your machine.
-- A Supabase account and project.
-- An OpenRouter API key.
-- A Firecrawl API key.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Setup Instructions
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-1. **Install Dependencies**
-   ```bash
-   cd app
-   npm install
-   ```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-2. **Configure Environment Variables**
-   Update the `app/.env.local` file with your actual API keys:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   OPENROUTER_API_KEY=your_openrouter_api_key
-   FIRECRAWL_API_KEY=your_firecrawl_api_key
-   ```
+## Learn More
 
-3. **Database Setup**
-   Go to your Supabase SQL Editor and run the contents of `supabase_schema.sql` found in the root directory.
+To learn more about Next.js, take a look at the following resources:
 
-4. **Run the Development Server**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) to see your app.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Project Structure
-- `src/app`: Page routes and API handlers.
-- `src/components`: UI components (Sidebar, DashboardShell, etc.).
-- `src/lib/supabase`: Supabase SSR client/server config.
-- `src/middleware.ts`: Auth protection and redirects.
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
