@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.OPENROUTER_API_KEY || 'dummy_key',
 });
 
 function extractVideoId(url: string): string | null {
