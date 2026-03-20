@@ -1,11 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY || 'dummy_key',
-});
+import Groq from 'groq-sdk';
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,10 +41,15 @@ Create a professional resume with these sections:
 
 Make the language strong and action-oriented. Use power verbs. Keep it to 1 page worth of content.`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'google/gemini-2.0-flash-001',
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) return NextResponse.json({ error: 'GROQ_API_KEY missing' }, { status: 500 });
+
+    const groq = new Groq({ apiKey });
+
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 1500,
+      max_tokens: 2048,
     });
 
     const resumeContent = completion.choices[0]?.message?.content ?? '';

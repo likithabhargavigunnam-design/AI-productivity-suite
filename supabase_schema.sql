@@ -73,3 +73,30 @@ CREATE TRIGGER on_resumes_updated
     BEFORE UPDATE ON public.resumes
     FOR EACH ROW
     EXECUTE PROCEDURE public.handle_updated_at();
+
+-- ==========================================
+-- SMART SUMMARIZE AI UPDATES
+-- ==========================================
+
+-- 5. Create Folders Table
+CREATE TABLE public.folders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS for Folders
+ALTER TABLE public.folders ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own folders"
+ON public.folders FOR ALL TO authenticated
+USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- 6. Modify Notes Table for SmartSummarize Additions
+-- Depending on if this was already ran, we use ADD COLUMN
+ALTER TABLE public.notes 
+ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES public.folders(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS source_type TEXT, -- e.g. 'youtube', 'image', 'manual'
+ADD COLUMN IF NOT EXISTS source_url TEXT,
+ADD COLUMN IF NOT EXISTS tags TEXT[];

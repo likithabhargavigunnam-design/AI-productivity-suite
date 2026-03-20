@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { YoutubeTranscript } from 'youtube-transcript';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY || 'dummy_key',
-});
+import Groq from 'groq-sdk';
 
 function extractVideoId(url: string): string | null {
   const patterns = [
@@ -37,8 +32,15 @@ export async function POST(req: NextRequest) {
     // Truncate to ~4000 words to avoid token limits
     const truncatedTranscript = transcript.split(' ').slice(0, 4000).join(' ');
 
-    const completion = await openai.chat.completions.create({
-      model: 'google/gemini-2.0-flash-001',
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({ error: 'GROQ_API_KEY is missing from environment variables.' }, { status: 500 });
+    }
+
+    const groq = new Groq({ apiKey });
+
+    const completion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
       messages: [
         {
           role: 'system',
@@ -67,11 +69,12 @@ Format your response as:
 [1-2 sentence takeaway]`,
         },
       ],
-      max_tokens: 800,
+      max_tokens: 1024,
     });
 
     const summary = completion.choices[0]?.message?.content ?? 'Could not generate summary.';
     return NextResponse.json({ summary, videoId });
+
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'An error occurred';
     return NextResponse.json({ error: message }, { status: 500 });

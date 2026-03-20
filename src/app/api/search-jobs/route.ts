@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
-import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY || 'dummy_key',
-});
 
 interface FirecrawlResult {
   url?: string;
@@ -48,17 +43,32 @@ export async function POST(req: NextRequest) {
         let aiSummary = '';
         if (rawContent.length > 100) {
           try {
-            const completion = await openai.chat.completions.create({
-              model: 'google/gemini-2.0-flash-001',
-              messages: [
-                {
-                  role: 'user',
-                  content: `Summarize this job listing in 2 concise sentences covering: role requirements, main responsibilities, and company highlight. Be direct and informative.\n\n${rawContent.substring(0, 2000)}`,
-                },
-              ],
-              max_tokens: 150,
+            const apiKey = process.env.OPENROUTER_API_KEY;
+            if (!apiKey) throw new Error('No API Key');
+
+            const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'http://localhost:3000',
+                'X-Title': 'SmartSummarize AI',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: 'meta-llama/llama-3.3-70b-instruct:free',
+                messages: [
+                  {
+                    role: 'user',
+                    content: `Summarize this job listing in 2 concise sentences covering: role requirements, main responsibilities, and company highlight. Be direct and informative.\n\n${rawContent.substring(0, 2000)}`,
+                  },
+                ],
+                max_tokens: 150,
+              })
             });
-            aiSummary = completion.choices[0]?.message?.content ?? '';
+            if (res.ok) {
+              const data = await res.json();
+              aiSummary = data.choices?.[0]?.message?.content ?? '';
+            }
           } catch {
             aiSummary = result.description ?? '';
           }
