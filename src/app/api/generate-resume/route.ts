@@ -4,10 +4,6 @@ import Groq from 'groq-sdk';
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const { name, email, phone, location, summary, experience, education, skills, projects } = await req.json();
 
     const prompt = `You are a professional resume writer. Create a polished, ATS-friendly resume for the following person. 
@@ -54,22 +50,31 @@ Make the language strong and action-oriented. Use power verbs. Keep it to 1 page
 
     const resumeContent = completion.choices[0]?.message?.content ?? '';
 
-    // Save to database
-    const { data: saved, error } = await supabase
-      .from('resumes')
-      .upsert({
-        user_id: user.id,
-        content: {
-          input: { name, email, phone, location, summary, experience, education, skills, projects },
-          generated: resumeContent,
-          created_at: new Date().toISOString(),
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (error) console.error('Failed to save resume:', error);
+    // Optionally save to database if user is authenticated
+    let saved = null;
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('resumes')
+          .upsert({
+            user_id: user.id,
+            content: {
+              input: { name, email, phone, location, summary, experience, education, skills, projects },
+              generated: resumeContent,
+              created_at: new Date().toISOString(),
+            },
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+        if (error) console.error('Failed to save resume:', error);
+        else saved = data;
+      }
+    } catch (dbErr) {
+      console.error('DB error (non-fatal):', dbErr);
+    }
 
     return NextResponse.json({ resume: resumeContent, saved });
   } catch (err: unknown) {
